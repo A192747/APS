@@ -54,7 +54,7 @@ public class Device {
         return "Device{" +
                 "index=" + index +
                 ", app=" + app +
-                ", timeStart=" + timeStart +
+                ", \ntimeStart=" + timeStart +
                 ", timeEnd=" + timeEnd +
                 '}' + "\n";
     }

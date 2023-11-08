@@ -8,6 +8,8 @@ module com.example.Kurs {
     requires org.kordamp.bootstrapfx.core;
     requires java.desktop;
     requires javafx.swing;
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
 
     opens com.example.Kurs to javafx.fxml;
     exports com.example.Kurs;

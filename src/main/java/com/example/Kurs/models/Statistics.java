@@ -5,6 +5,10 @@ import com.example.Kurs.models.dispatchers.DispatcherInput;
 import com.example.Kurs.models.dispatchers.DispatcherOutput;
 import com.example.Kurs.models.streams.InputStream;
 import com.example.Kurs.models.streams.OutputStream;
+import javafx.scene.control.TextArea;
+
+import java.awt.*;
+import java.util.Map;
 
 public class Statistics {
     private static int countApp = MainController.countOfApps;
@@ -21,24 +25,36 @@ public class Statistics {
 
     }
 
-    public static void getSystemStatus(){
-        System.out.println("------------------NEXT STEP----------------");
-        System.out.println("SYSTEM TIME: " + MainController.systemTime);
-        System.out.println("SOURCE");
-        System.out.println((dispInput.readApp() != null && MainController.visibleApp) ? dispInput.readApp() : null);
-        System.out.println("BUFFER");
-        System.out.println(buffer.getBufferApps());
-        System.out.println("DEVISES");
-        System.out.println(outputStream.getDevices());
+    public static void getSystemStatus(TextArea out){
+        StringBuilder str = new StringBuilder();
+        str.append("------------------NEXT STEP----------------\n");
+        str.append("SYSTEM TIME: " + MainController.systemTime + "\n");
+        str.append("SOURCE" + "\n");
+        str.append(((dispInput.readApp() != null && MainController.visibleApp) ? dispInput.readApp() : null) + "\n");
+        str.append("BUFFER" + "\n");
+        if(!buffer.isEmpty()) {
+            for (Application app : buffer.getBufferApps()) {
+                str.append(app + "\n");
+            }
+        } else {
+            str.append(buffer.getBufferApps() + "\n");
+        }
+        str.append("DEVISES" + "\n");
+        str.append(outputStream.getDevices() + "\n");
+
+        if(out != null)
+            out.appendText(str.toString());
+        else
+            System.out.println(str);
     }
-    public static void getCountOfAppFromSources() {
-        System.out.println(inputStream.getInfoFromSources());
+    public static Map<Integer, Integer> getCountOfAppFromSources() {
+        return inputStream.getInfoFromSources();
     }
     public static void getProbabilityRefusalAverage() {
         System.out.println(buffer.getCountOfRefusals() / countApp);
     }
-    public static void getProbabilityRefusalForSources() {
-        System.out.println(buffer.getProbabilityOfRefusalsForSources());
+    public static Map<Integer, Double> getProbabilityRefusalForSources() {
+        return buffer.getProbabilityOfRefusalsForSources();
     }
     public static void getAverageTimeOfApp() {
         //Это время прибывания заявки в системе или на приборе?

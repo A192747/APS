@@ -26,10 +26,7 @@ public class Application implements Comparable<Application>{
         return appIndex;
     }
     public void setStatusApp(StatusApp status) {
-        StatusApp prevStat = this.status;
         this.status = status;
-//        if(prevStat != status)
-//            Statistics.getSystemStatus();
     }
     public double getCreateTime() {
         return createTime;
@@ -44,7 +41,7 @@ public class Application implements Comparable<Application>{
                 "appIndex=" + appIndex +
                 ", createTime=" + createTime +
                 ", status=" + status +
-                '}' + "\n";
+                '}';
     }
 
     @Override

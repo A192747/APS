@@ -8,6 +8,7 @@ import com.example.Kurs.models.dispatchers.DispatcherInput;
 import com.example.Kurs.models.dispatchers.DispatcherOutput;
 import com.example.Kurs.models.streams.InputStream;
 import com.example.Kurs.models.streams.OutputStream;
+import com.example.Kurs.util.ReportGenerator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,8 +30,6 @@ public class MainController {
     @FXML
     private TextField bufferSizeArea;
 
-    @FXML
-    private ImageView catImage;
 
     @FXML
     private TextField countOfAppsArea;
@@ -78,8 +77,10 @@ public class MainController {
         //Иначе время не будет меняться
         while(!finish){
             nextStep();
-            Statistics.getSystemStatus();
+            Statistics.getSystemStatus(null);
         }
+        ReportGenerator.generateXLSXReport();
+        Process proc = Runtime.getRuntime().exec("cmd /c start \"\" \"" + ReportGenerator.getApsPath() + "\"");
         System.out.println("Average Time of work:");
         Statistics.getAverageTimeOfWork();
         System.out.println("Count of apps from sources");
@@ -96,7 +97,7 @@ public class MainController {
     void startStepMode(ActionEvent event) throws IOException {
         init();
         FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("StepModeWindow.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 412, 452);
+        Scene scene = new Scene(fxmlLoader.load(), 650, 374);
         Stage stage = new Stage();
         stage.setScene(scene);
         stage.setTitle("Пошаговый метод");
@@ -107,8 +108,6 @@ public class MainController {
 
         stage.show();
     }
-
-    private static boolean checkDeviceDeleteApp = false;
 
     private static StatusApp currentStatus = StatusApp.APP_GENERATION;
 
@@ -135,16 +134,12 @@ public class MainController {
         } else {
             visibleApp = true;
             systemTime = dispatcherInput.readApp().getCreateTime();
-            checkDeviceDeleteApp = true;
             currentStatus = StatusApp.PUT_INTO_BUFFER;
         }
     }
     public static boolean visibleApp = false;
-    private static boolean lastStep = false;
     private static boolean finish = false;
     public static void nextStep(){
-        System.out.println(currentStatus + " " + lastStep);
-        System.out.println(inputStream.getApplications().get(inputStream.getApplications().size() - 1));
         switch (currentStatus) {
             case APP_GENERATION -> {
                 //Если заявки нет, то создаем
