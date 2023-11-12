@@ -7,6 +7,7 @@ import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -22,8 +23,9 @@ public class OutputStream {
     //
     private int countDevice;
     private Map<Integer, Double> sourceWorkTime;
-    private static final double lambda = MainController.lambda;
     private ArrayList<Device> devices;
+    private static Map<Integer, List<Double>> timeForSources;
+    private static Map<Integer, Double> timeForDevices;
 
     public OutputStream(int countDevice) {
         this.countDevice = countDevice;
@@ -33,8 +35,14 @@ public class OutputStream {
         }
         this.lastDeviceIndex = 0;
         sourceWorkTime = new HashMap<>();
+        timeForSources = new HashMap<>();
+        timeForDevices = new HashMap<>();
         for(int i = 0; i < MainController.inputStream.getInfoFromSources().size(); i++) {
             sourceWorkTime.put(i, 0.0);
+            timeForSources.put(i, null);
+        }
+        for(int i = 0; i < MainController.countOfDevices; i++) {
+            timeForDevices.put(i, 0.0);
         }
     }
     public boolean isDevicesOverflow() {
@@ -62,12 +70,19 @@ public class OutputStream {
         }
     }
     public Map<Integer, Double> getWorkTimeForSources() {
-        //NEED TEST
         Map<Integer, Integer> allSources = MainController.inputStream.getInfoFromSources();
+        Map<Integer, Double> result = new HashMap<>();
         for(int i = 0 ; i < allSources.size(); i++) {
-            sourceWorkTime.put(i, sourceWorkTime.get(i)/ allSources.get(i));
+            result.put(i, sourceWorkTime.get(i)/ allSources.get(i));
         }
-        return sourceWorkTime;
+        return result;
+    }
+    public Map<Integer, Double> getDevicesCoefficients() {
+        Map<Integer, Double> result = new HashMap<>();
+        for(int i = 0; i < countDevice; i++) {
+            result.put(i, timeForDevices.get(i) / MainController.systemTime);
+        }
+        return result;
     }
     private Device getDeviceWithLowestTime() {
         Double minTime = getLowestTime();
@@ -78,11 +93,41 @@ public class OutputStream {
         }
         return null;
     }
+    private static void getInfoForSources(Device device) {
+        int index = device.getAppSourceIndex();
+        List<Double> list = timeForSources.get(index);
+        if (list == null)
+            list = new ArrayList<>();
+        list.add(device.getTimeEnd() - device.getTimeStart());
+        timeForSources.put(device.getAppSourceIndex(), list);
+    }
+    private static void getInfoForDevices(Device device) {
+        timeForDevices.put(device.getIndex(),
+                timeForDevices.get(device.getIndex()) + device.getTimeEnd() - device.getTimeStart());
+    }
     public void deleteAppFromDevice() {
         if(!isDevicesFinished()) {
             Device device = getDeviceWithLowestTime();
+
+            getInfoForSources(device);
+            getInfoForDevices(device);
+
             device.deleteAppFromDevice();
         }
+    }
+
+    public Map<Integer, Double> getDispersion() {
+        Map<Integer, Double> result = new HashMap<>();
+        for(int i = 0; i < timeForSources.size(); i++) {
+            if(timeForSources.get(i) != null) {
+                double averageTime = timeForSources.get(i).stream().reduce(0.0, Double::sum) / timeForSources.get(i).size();
+                result.put(i, (1.0f / timeForSources.get(i).size()) * timeForSources.get(i)
+                        .stream().map(x -> Math.pow(x - averageTime, 2)).reduce(0.0, Double::sum));
+            } else {
+                result.put(i, null);
+            }
+        }
+        return result;
     }
     public double getLowestTime() {
         double minTime = Double.MAX_VALUE;

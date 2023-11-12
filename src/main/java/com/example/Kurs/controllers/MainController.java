@@ -15,6 +15,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -58,6 +60,8 @@ public class MainController {
     public static DispatcherOutput dispatcherOutput;
 
     private void init(){
+        finish = false;
+        currentStatus = StatusApp.APP_GENERATION;
         alpha = Double.valueOf(aValueArea.getText());
         beta = Double.valueOf(bValueArea.getText());
         bufferSize = Integer.valueOf(bufferSizeArea.getText());
@@ -80,17 +84,7 @@ public class MainController {
             Statistics.getSystemStatus(null);
         }
         ReportGenerator.generateXLSXReport();
-        Process proc = Runtime.getRuntime().exec("cmd /c start \"\" \"" + ReportGenerator.getApsPath() + "\"");
-        System.out.println("Average Time of work:");
-        Statistics.getAverageTimeOfWork();
-        System.out.println("Count of apps from sources");
-        Statistics.getCountOfAppFromSources();
-        System.out.println("Count of refusal apps from sources");
-        Statistics.getCountOfRefusalsForSources();
-        System.out.println("Probability for sources");
-        Statistics.getProbabilityRefusalForSources();
-        System.out.println("Average device time for sources");
-        Statistics.getAverageTimeOfWork();
+        Runtime.getRuntime().exec("cmd /c start \"\" \"" + ReportGenerator.getApsPath() + "\"");
     }
 
     @FXML
@@ -102,11 +96,8 @@ public class MainController {
         stage.setScene(scene);
         stage.setTitle("Пошаговый метод");
         stage.setResizable(false);
-
-        Stage currentStage = (Stage) countOfAppsArea.getScene().getWindow();
-        currentStage.close();
-
-        stage.show();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
     }
 
     private static StatusApp currentStatus = StatusApp.APP_GENERATION;
@@ -171,7 +162,6 @@ public class MainController {
                 }
             }
             case OUT_FROM_DEVICE -> {
-//                checkDevice();
                 systemTime = outputStream.getLowestTime();
                 outputStream.deleteAppFromDevice();
                 currentStatus = StatusApp.PUT_INTO_DEVICE;

@@ -48,6 +48,11 @@ public class Device {
         this.timeStart = 0;
         this.timeEnd = 0;
     }
+    public int getAppSourceIndex() {
+        if(app != null)
+            return app.getAppIndex().keySet().stream().findFirst().get();
+        return 0;
+    }
 
     @Override
     public String toString() {
